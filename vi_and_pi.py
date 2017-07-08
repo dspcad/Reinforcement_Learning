@@ -177,6 +177,7 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
 	############################
 	# YOUR IMPLEMENTATION HERE #
 	############################
+	new_policy = np.zeros(nS, dtype=int)
         for st in range(nS):
 
           max_gamma_sum = 0.0
@@ -197,10 +198,10 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
               max_gamma_sum = Q
               argmax_a = a
 
-          policy[st] = argmax_a
+          new_policy[st] = argmax_a
       
 
-	return policy
+	return new_policy
 
 
 def policy_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
@@ -246,10 +247,18 @@ def policy_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
 	############################
         for itr in range(max_iteration):
           V = policy_evaluation(P, nS, nA, policy, gamma=0.9, max_iteration=1000, tol=1e-3)
-          print "value function: ", V
+          #print "value function: ", V
+          policy_old = policy
           policy = policy_improvement(P, nS, nA, V, policy, gamma=0.9)
-          print "policy: ", policy
+          print "old policy: ", policy_old
+          print "new policy: ", policy
+
+          #print "difference: ", np.all(np.abs(policy_old-policy) < tol )
+          if np.all(np.abs(policy_old-policy) < tol):
+            print "iteration: ", itr
+            break
   
+
 	return V, policy
 
 
@@ -306,8 +315,8 @@ def render_single(env, policy):
 # Play around with these hyperparameters.
 
 if __name__ == "__main__":
-	#env = gym.make("Deterministic-4x4-FrozenLake-v0")
-	env = gym.make("Stochastic-4x4-FrozenLake-v0")
+	env = gym.make("Deterministic-4x4-FrozenLake-v0")
+	#env = gym.make("Stochastic-4x4-FrozenLake-v0")
 	print env.__doc__
 	print "Here is an example of state, action, reward, and next state"
 	#example(env)
@@ -317,7 +326,7 @@ if __name__ == "__main__":
 	  print "state ", i, " : ", env.P[i]
         print env.nS
         print env.nA
-	V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=2000, tol=1e-3)
-	render_single(env, p_vi)
-	#V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
-	#render_single(env, p_pi)
+	#V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=2000, tol=1e-3)
+	#render_single(env, p_vi)
+	V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
+	render_single(env, p_pi)
